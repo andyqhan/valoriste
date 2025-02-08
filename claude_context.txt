@@ -1,0 +1,154 @@
+# Valoriste - Automated Fashion Resale Deal Finder
+
+## Project Overview
+Valoriste is a web application that helps users find profitable fashion resale opportunities on eBay. It automatically searches for items from specific brands, analyzes their potential profitability, and presents deals sorted by ROI (Return on Investment).
+
+## Core Features
+1. User-specific preferences (brands, sizes, price ranges)
+2. Automated eBay searching with size filtering
+3. Deal analysis and ROI calculation
+4. Real-time price comparison
+5. Image gallery for each item
+6. Brand-based filtering and sorting
+
+## Key Components
+
+### 1. Web Application (web_app.py)
+- Flask-based web server
+- Handles routing and template rendering
+- Manages async operations for eBay API calls
+- Processes and aggregates deal data
+
+### 2. eBay Integration (ebay_client.py)
+- Handles eBay API authentication
+- Performs item searches with advanced filtering
+- Processes XML responses
+- Implements rate limiting and caching
+- Manages image quality optimization
+
+### 3. User Management (user_service.py)
+- Manages user profiles and preferences
+- Stores size preferences and brand lists
+- Currently uses in-memory storage (planned DB integration)
+
+### 4. Deal Analysis (price_analyzer.py)
+- Calculates potential profit margins
+- Determines ROI for each item
+- Filters out unprofitable items
+
+### 5. Frontend (templates/)
+- home.html: User selection and landing page
+- results.html: Deal display and filtering interface
+- Uses Alpine.js for reactive UI
+- Tailwind CSS for styling
+
+## User Profiles
+The system currently supports three demo users:
+1. Andy (Men's fashion, sizes S/M, waist 28-29)
+   - Brands: Theory, APC, Norse Projects, etc.
+   - Focus: High-end minimalist fashion
+
+2. Thai (Men's fashion, sizes M/L)
+   - Brands: Lululemon, Norse Projects, etc.
+   - Focus: Athletic and streetwear
+
+3. Rose (Women's fashion, sizes S/M)
+   - Brands: Korean and contemporary fashion
+   - Focus: Trendy and designer items
+
+## Data Flow
+1. User selects profile
+2. System fetches preferences
+3. eBay client searches for matching items
+4. Price analyzer evaluates deals
+5. Results are filtered and sorted
+6. UI displays deals with images and stats
+
+## Key Files
+- run.py: Application entry point
+- config.py: Configuration management
+- ebay_api.py: eBay API interface
+- web_app.py: Main application logic
+- templates/: Frontend templates
+- services/: Business logic services
+- models/: Data models
+- api/: API clients
+
+## Environment Setup
+Required environment variables:
+- EBAY_CLIENT_ID
+- EBAY_CLIENT_SECRET
+- EBAY_REDIRECT_URI
+- EBAY_AUTH_TOKEN
+- EBAY_REFRESH_TOKEN
+
+## Authentication Flow
+The application uses eBay's OAuth 2.0 authentication:
+
+### Token Management
+1. Tokens are stored in .env file:
+   - EBAY_AUTH_TOKEN: Short-lived access token (2 hours)
+   - EBAY_REFRESH_TOKEN: Long-lived refresh token (18 months)
+
+### Authentication Process
+1. On startup/API request:
+   - Check if EBAY_AUTH_TOKEN exists and is valid
+   - If valid: Use existing token
+   - If invalid: Try refresh flow
+
+2. Refresh Flow:
+   - Use EBAY_REFRESH_TOKEN to get new access token
+   - Update .env with new EBAY_AUTH_TOKEN
+   - If refresh fails: Start new OAuth flow
+
+3. New OAuth Flow:
+   - Redirect user to eBay login page
+   - User authorizes application
+   - eBay redirects back with auth code
+   - Exchange code for new tokens
+   - Update .env with both tokens
+
+### Implementation Details
+- EbayAPI class (ebay_api.py) handles all auth logic
+- validate_token() checks token validity
+- refresh_access_token() handles refresh flow
+- start_oauth_flow() manages new authorization
+- update_env_file() persists tokens
+
+### Token Lifecycle
+1. Access Token:
+   - Valid for 2 hours
+   - Used for all API requests
+   - Automatically refreshed when expired
+
+2. Refresh Token:
+   - Valid for 18 months
+   - Used only to get new access tokens
+   - Must re-authorize if expired
+
+### Error Handling
+- Catches 401 Unauthorized responses
+- Attempts token refresh before failing
+- Falls back to new OAuth flow if needed
+- Maintains session during auth process
+
+## Planned Improvements
+1. Database integration for user data
+2. More sophisticated price analysis
+3. Additional marketplace integrations
+4. Enhanced image handling
+5. User authentication
+6. Deal tracking and notifications
+
+## Common Operations
+1. Adding new brands: Update user_service.py
+2. Modifying size filters: Update user_service.py and ebay_client.py
+3. UI changes: Modify templates/
+4. API changes: Update ebay_client.py
+
+## Debug Notes
+- Set debug=True in ebay_client.py for API logging
+- Check browser console for size filtering logs
+- Monitor rate limiting in eBay API responses
+
+This context should help understand the project structure and make improvements while maintaining consistency with the existing architecture. 
